@@ -5,6 +5,26 @@ from telegram import Update
 from config import TOKEN
 import random
 
+def start(update: Update, context: CallbackContext):
+    update.message.reply_text(f"""
+                              Я бот-калькулятор. Введи команду, а после нее 2 числа через пробел
+                              /plus - для сложения
+                              /minus - для вычитания
+                              /mul - для умножения
+                              /div - для деления
+                              """)
+def get_factorial(update: Update, context: CallbackContext):
+    num = context.args #список
+    if not num or len(num) != 1 or not num[0].isdigit():
+        update.message.reply_text("Введите одно число")
+        return None
+    num = int(num.pop())
+    factorial = 1
+    factorial_list = []
+    for i in range(1, num+1):
+        factorial *= i
+        factorial_list.append(factorial)
+    update.message.reply_text(f"{factorial_list}")
 
 def make_eval(update: Update, context: CallbackContext, message: list):
     if not message or len(message) != 2:
@@ -72,8 +92,9 @@ def gateway(update: Update, context: CallbackContext):
 # блок обработчиков
 minus_handler = CommandHandler("minus", minus)
 plus_handler = CommandHandler("plus", plus)
-multiply_handler = CommandHandler("multiply", multiply)
-divide_handler = CommandHandler("divide", divide)
+multiply_handler = CommandHandler("mul", multiply)
+divide_handler = CommandHandler("div", divide)
+start_handler = CommandHandler("start", start)
 message_handler = MessageHandler(Filters.text, gateway)
 
 # сам бот и его зам
@@ -86,6 +107,7 @@ dispatcher.add_handler(minus_handler)
 dispatcher.add_handler(multiply_handler)
 dispatcher.add_handler(divide_handler)
 dispatcher.add_handler(message_handler)
+dispatcher.add_handler(start_handler)
 
 
 updater.start_polling()

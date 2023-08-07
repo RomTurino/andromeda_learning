@@ -7,21 +7,31 @@ from telegram.ext import (
     ConversationHandler
 )
 from telegram.ext.filters import Filters
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from config import TOKEN
 
-NAME, SURNAME, NUMBER = range(3)
+GENDER, NAME, SURNAME, NUMBER = range(4)
+MALE, FEMALE, OTHER = "мужской", "женский", "другой"
 
 # блок функций
 def start(update: Update, context: CallbackContext):
     # update - входящее сообщение, context - это чат в целом
+    keyboard = [[MALE, FEMALE, OTHER]] # разметка
+    markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True, input_field_placeholder="Выберите ваш пол")
     bot_name = context.bot.name
-    update.message.reply_text(f"Я бот, меня зовут {bot_name}")
-    update.message.reply_text("Начинаю сбор информации. Назови своё имя")
-    return NAME # переход к следующему шагу
+    update.message.reply_text(f"Я бот, меня зовут {bot_name}", reply_markup=markup)
+    update.message.reply_text("Начинаю сбор информации. Выбери свой пол или нажми /end, чтобы прекратить разговор")
+    return GENDER # переход к следующему шагу
     
 def end(update: Update, context: CallbackContext):
     update.message.reply_text(f"Значит, ты выбрал конец")
+    return ConversationHandler.END
+
+def get_gender(update: Update, context: CallbackContext):
+    gender = update.message.text 
+    context.user_data["gender"] = gender
+    update.message.reply_text("Попрошу Вас ввести имя", reply_markup=ReplyKeyboardRemove())
+    return NAME
 
 def get_name(update: Update, context: CallbackContext):
     name = update.message.text
@@ -57,10 +67,12 @@ dispatcher = updater.dispatcher
 contact_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start)], # точка входа
     states={
-            NAME:[MessageHandler(Filters.text, get_name)],
-            SURNAME:[MessageHandler(Filters.text, get_surname)]
+            GENDER:[MessageHandler(Filters.regex(f"^({MALE}|{FEMALE}|{OTHER})$"), get_gender)],
+            NAME:[MessageHandler(Filters.text & ~Filters.command, get_name)],
+            SURNAME:[MessageHandler(Filters.text & ~Filters.command, get_surname)],
+            NUMBER:[MessageHandler(Filters.text & ~Filters.command, get_number)]
         }, # шаги разговора
-    fallbacks=[CommandHandler("no", end)] # точка выхода
+    fallbacks=[CommandHandler("end", end)] # точка выхода
 )
 #добавляем хэндлеры диспетчеру
 dispatcher.add_handler(contact_handler)

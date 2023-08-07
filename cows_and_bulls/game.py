@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 # блок импортов
 from telegram.ext import Updater, CallbackContext, CommandHandler, MessageHandler
 from telegram.ext.filters import Filters
@@ -13,9 +14,12 @@ def gateway(update: Update, context: CallbackContext):
             words = file.read().split('\n') # получаем список слов 
         secret_word = random.choice(words) # выбираем случайное слово
         context.user_data["секрет"] = secret_word # записываем
+        update.message.reply_text(f"Это - словесная игра 'Быки и коровы'. Я загадал слово из {len(secret_word)} букв. Ваша задача - называть слова из такого же количества букв. Если буква из вашего слова будет в моем - она будет называться коровой. Если же ее место в слове совпадает с моим, то она становится быком. Ваша цель - угадать всё слово. Удачи!")
     else:
         secret_word = context.user_data["секрет"] #достаем
-    if len(secret_word) != len(my_word):
+    if my_word != '/start':
+        return None
+    elif len(secret_word) != len(my_word):
         update.message.reply_text(f"Количество букв должно быть {len(secret_word)}")
         return None
     bulls = 0 # быки, совпадает позиция

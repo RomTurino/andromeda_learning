@@ -26,7 +26,7 @@ def send_contact(update: Update, context: CallbackContext):
 
 
 def hello(update: Update, context: CallbackContext):
-    user_name = update.effective_user.first_name
+    user_name = update.effective_user.last_name
     update.message.reply_photo(
         "https://mega-u.ru/wp-content/uploads/2023/03/113-5.jpg")
     update.message.reply_text(f"Ну привет, {user_name}")
@@ -38,12 +38,12 @@ def bye(update: Update, context: CallbackContext):
 
 
 def echo(update: Update, context: CallbackContext):
-    message = context.args
+    message = context.args # то, что написано после команды
     if not message:  # если сообщение пустое
         update.message.reply_text(
             "После команды /echo нужно набрать сообщение через пробел")
         return None
-    message = " ".join(message)
+    message = " ".join(message) # объединяем список в строку
     update.message.reply_text(message)
     print(message)
 
